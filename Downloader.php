@@ -40,9 +40,10 @@ class Downloader extends PluginAbstract
 	 * Show a button/link to allow users to download the original media file.
 	 * 
 	 */
-	public function display_download_button()
+	public function display_download_button($video)
 	{
-		
+		$videoService = new VideoService();
+		include(dirname(__FILE__) . '/download-button.php');	
 	}
 
 	/**
