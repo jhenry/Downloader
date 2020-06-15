@@ -40,9 +40,14 @@ class Downloader extends PluginAbstract
 	 * Show a button/link to allow users to download the original media file.
 	 * 
 	 */
-	public function display_download_button()
+	public function display_download_button($video)
 	{
-		
+		if (Downloader::check_permissions($video)) {
+			$videoService = new VideoService();
+			$file = Downloader::get_file_path($video);
+			$filesize = Functions::formatBytes(filesize($file));
+			include(dirname(__FILE__) . '/download-button.php');	
+		}
 	}
 
 	/**
@@ -56,25 +61,84 @@ class Downloader extends PluginAbstract
 			$videoMapper = new VideoMapper();
 			$video = $videoMapper->getVideoById($videoId);	
 
-			$file = UPLOAD_PATH . '/temp/' . $video->filename . '.' . $video->originalExtension;
-			$slug = Functions::createSlug($video->title);
-			$filename = $slug ?? $video->filename;
-			$filename = $filename . '.' . $video->originalExtension;
-
-
-			if (file_exists($file)) {
-				header('Content-Description: File Download');
-				header('Content-Type: application/octet-stream');
-				header('Content-Disposition: attachment; filename="'. $filename .'"');
-				header('Expires: 0');
-				header('Cache-Control: must-revalidate');
-				header('Pragma: public');
-				header('Content-Length: ' . filesize($file));
-				readfile($file);
-				exit;
-			}	
-
+			if( Downloader::check_permissions($video) ){
+				$file = Downloader::get_file_path($video);
+				$filename = Downloader::get_file_name($video);
+				Downloader::send_file($file, $filename);
+			}
 		}
 		
 	}
+
+	
+	/**
+	 * Send headers to begin download.
+	 * 
+	 * @param string $file The full path to the original media file, including the filename..
+	 * @param string $filename The name the file will be saved as when downloaded.
+	 */
+	private function send_file($file, $filename)
+	{
+		if (file_exists($file)) {
+			header('Content-Description: File Download');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'. $filename .'"');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate');
+			header('Pragma: public');
+			header('Content-Length: ' . filesize($file));
+			readfile($file);
+			exit;
+		}	
+	}
+	/**
+	 * Build a file path and extension
+	 * 
+	 * @param Video $video Object represtenting the media.  
+	 * @return string $path The path to the media file.
+	 */
+	private function get_file_path($video)
+	{
+		$directory = '/temp/';
+		$path = UPLOAD_PATH . $directory . $video->filename . '.' . $video->originalExtension;
+		return $path;
+
+	}
+
+	/**
+	 * Set a pretty filename for the download.  
+	 * 
+	 * @param Video $video Object containing video info. 
+	 * @return string $filname The new filename for the media that is being downloaded.
+	 */
+	private function get_file_name($video)
+	{
+		$slug = Functions::createSlug($video->title);
+		$filename = $slug ?? $video->filename;
+		$filename = $filename . '.' . $video->originalExtension;
+		return $filename;
+
+	}
+
+
+	/**
+	 * Confirm that current user has proper permissions on this video.
+	 * 
+	 * @param Video $video Object containing video information to compare ownership. 
+	 */
+	private function check_permissions($video)
+	{
+		$authService = new AuthService();
+		$user = $authService->getAuthUser();
+	
+		// If there is a logged in session
+		if ($user) {
+			// If the logged in user matches the owner of the video.
+			if($video->userId == $user->userId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
