@@ -44,6 +44,8 @@ class Downloader extends PluginAbstract
 	{
 		if (Downloader::check_permissions($video)) {
 			$videoService = new VideoService();
+			$file = Downloader::get_file_path($video);
+			$filesize = Functions::formatBytes(filesize($file));
 			include(dirname(__FILE__) . '/download-button.php');	
 		}
 	}
