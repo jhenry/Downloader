@@ -42,8 +42,10 @@ class Downloader extends PluginAbstract
 	 */
 	public function display_download_button($video)
 	{
-		$videoService = new VideoService();
-		include(dirname(__FILE__) . '/download-button.php');	
+		if (Downloader::check_permissions($video)) {
+			$videoService = new VideoService();
+			include(dirname(__FILE__) . '/download-button.php');	
+		}
 	}
 
 	/**
@@ -78,4 +80,25 @@ class Downloader extends PluginAbstract
 		}
 		
 	}
+
+	/**
+	 * Confirm that current user has proper permissions on this video.
+	 * 
+	 * @param Video $video Object containing video information to compare ownership. 
+	 */
+	private function check_permissions($video)
+	{
+		$authService = new AuthService();
+		$user = $authService->getAuthUser();
+	
+		// If there is a logged in session
+		if ($user) {
+			// If the logged in user matches the owner of the video.
+			if($video->userId == $user->userId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
