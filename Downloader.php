@@ -28,6 +28,27 @@ class Downloader extends PluginAbstract
 	public $version = '0.1.0';
 
 	/**
+         * Performs install operations for plugin. Called when user clicks install
+         * plugin in admin panel.
+         *
+         */
+        public function install()
+        {
+		$roles = array('admin', 'mod');
+		Settings::set('downloader_roles', json_encode($roles));
+        }
+
+        /**
+         * Performs uninstall operations for plugin. Called when user clicks
+         * uninstall plugin in admin panel and prior to files being removed.
+         *
+         */
+        public function uninstall()
+        {
+                Settings::remove('downloader_roles');
+        }
+
+	/**
 	 * Attaches plugin methods to hooks in code base
 	 */
 	public function load()
@@ -100,7 +121,14 @@ class Downloader extends PluginAbstract
 	private function get_file_path($video)
 	{
 		$directory = '/temp/';
-		$path = UPLOAD_PATH . $directory . $video->filename . '.' . $video->originalExtension;
+		if (class_exists('Wowza')) {
+			$wowza_root = Settings::get('wowza_upload_dir');
+			$uploads_base = $wowza_root . Wowza::get_video_owner_homedir($video->videoId);
+		} 
+		else {
+			$uploads_base = UPLOAD_PATH;
+		}
+		$path = $uploads_base . $directory . $video->filename . '.' . $video->originalExtension;
 		return $path;
 
 	}
@@ -130,6 +158,7 @@ class Downloader extends PluginAbstract
 	{
 		$authService = new AuthService();
 		$user = $authService->getAuthUser();
+		$allowed_roles = json_decode( Settings::get('downloader_roles') );
 	
 		// If there is a logged in session
 		if ($user) {
@@ -137,6 +166,10 @@ class Downloader extends PluginAbstract
 			if($video->userId == $user->userId) {
 				return true;
 			}
+			// Alternatively, if they belong to an allowed role set
+			if (in_array($user->role, $allowed_roles)) {
+				return true;
+			} 
 		}
 		return false;
 	}
