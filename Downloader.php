@@ -61,7 +61,7 @@ class Downloader extends PluginAbstract
 	 * Show a button/link to allow users to download the original media file.
 	 * 
 	 */
-	public function display_download_button($video)
+	public static function display_download_button($video)
 	{
 		if (Downloader::check_permissions($video)) {
 			$videoService = new VideoService();
@@ -75,7 +75,7 @@ class Downloader extends PluginAbstract
 	 * Download the original media file.
 	 * 
 	 */
-	public function download_file()
+	public static function download_file()
 	{
 		if( isset($_GET['download']) ){
 			$videoId = $_GET['download'];
@@ -154,7 +154,7 @@ class Downloader extends PluginAbstract
 	 * 
 	 * @param Video $video Object containing video information to compare ownership. 
 	 */
-	private function check_permissions($video)
+	private static function check_permissions($video)
 	{
 		$authService = new AuthService();
 		$user = $authService->getAuthUser();
