@@ -98,7 +98,7 @@ class Downloader extends PluginAbstract
 	 * @param string $file The full path to the original media file, including the filename..
 	 * @param string $filename The name the file will be saved as when downloaded.
 	 */
-	private function send_file($file, $filename)
+	private static function send_file($file, $filename)
 	{
 		if (file_exists($file)) {
 			header('Content-Description: File Download');
@@ -118,7 +118,7 @@ class Downloader extends PluginAbstract
 	 * @param Video $video Object represtenting the media.  
 	 * @return string $path The path to the media file.
 	 */
-	private function get_file_path($video)
+	private static function get_file_path($video)
 	{
 		$directory = '/temp/';
 		if (class_exists('Wowza')) {
@@ -139,7 +139,7 @@ class Downloader extends PluginAbstract
 	 * @param Video $video Object containing video info. 
 	 * @return string $filname The new filename for the media that is being downloaded.
 	 */
-	private function get_file_name($video)
+	private static function get_file_name($video)
 	{
 		$slug = Functions::createSlug($video->title);
 		$filename = $slug ?? $video->filename;
