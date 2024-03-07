@@ -108,6 +108,9 @@ class Downloader extends PluginAbstract
 			header('Cache-Control: must-revalidate');
 			header('Pragma: public');
 			header('Content-Length: ' . filesize($file));
+            
+            // Allow larger files to be downloaded by disabling the output buffer
+            if (ob_get_level()) ob_end_clean();
 			readfile($file);
 			exit;
 		}	
