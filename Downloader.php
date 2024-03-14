@@ -54,6 +54,7 @@ class Downloader extends PluginAbstract
 	public function load()
 	{
 		Plugin::attachEvent('watch.share', array(__CLASS__, 'display_download_button'));
+		Plugin::attachEvent('videos.cardheader.actions', array(__CLASS__, 'download_button_only'));
 		Plugin::attachEvent('watch.start', array(__CLASS__, 'download_file'));
 	}
 
@@ -61,15 +62,30 @@ class Downloader extends PluginAbstract
 	 * Show a button/link to allow users to download the original media file.
 	 * 
 	 */
-	public static function display_download_button($video)
+	public static function display_download_button($video, $button_only = false)
 	{
 		if (Downloader::check_permissions($video)) {
 			$videoService = new VideoService();
 			$file = Downloader::get_file_path($video);
 			$filesize = Functions::formatBytes(filesize($file));
-			include(dirname(__FILE__) . '/download-button.php');	
+            if( $button_only ) {
+              include(dirname(__FILE__) . '/download-button-only.php');	
+            } else {
+              include(dirname(__FILE__) . '/download-button.php');	
+            }
 		}
 	}
+
+	/**
+     * Wrapper for display_download_button.  Show button without 
+     * accompanying header/text.
+	 * 
+	 */
+	public static function download_button_only($video)
+	{
+      Downloader::display_download_button($video, true);
+    }
+
 
 	/**
 	 * Download the original media file.
