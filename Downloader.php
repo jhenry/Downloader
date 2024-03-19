@@ -54,7 +54,7 @@ class Downloader extends PluginAbstract
 	public function load()
 	{
 		Plugin::attachEvent('watch.share', array(__CLASS__, 'display_download_button'));
-		Plugin::attachEvent('videos.cardheader.actions', array(__CLASS__, 'download_button_only'));
+		Plugin::attachEvent('videos.cardheader.left', array(__CLASS__, 'download_button_only'));
 		Plugin::attachEvent('watch.start', array(__CLASS__, 'download_file'));
 	}
 
